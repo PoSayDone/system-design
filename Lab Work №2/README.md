@@ -99,8 +99,9 @@ Rel(api_app, food_api, "Search Food Info", "HTTPS/REST")
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
 Container(db, "Database", "PostgreSQL", "Data Storage")
-System_Ext(stt, "External STT", "Voice Recog")
-System_Ext(food, "External Food DB", "Nutrition Info")
+System_Ext(stt, "Speech-to-Text Service", "Распознавание речи")
+System_Ext(food, "Nutrition Data Provider", "База продуктов")
+Container(mobile_app, "Mobile App", "Flutter/Dart", "Интерфейс для ввода данных и просмотра отчетов")
 
 Container_Boundary(api, "API Application") {
     Component(sign_in, "Auth Controller", "FastAPI Route", "Авторизация пользователей")
@@ -110,10 +111,19 @@ Container_Boundary(api, "API Application") {
     Component(speech_srv, "Speech Service", "Service Class", "Адаптер к STT API")
     Component(nlp, "NLP Processor", "Python/Spacy", "Извлечение: Продукт + Вес")
     Component(nutr_srv, "Nutrition Service", "Service Class", "Адаптер к Food API")
+    Component(auth_srv, "Auth Service", "Service Class", "Сервис для работы с авторизацией")
     Component(calc, "Calorie Calculator", "Domain Logic", "Расчет итоговых КБЖУ")
     
     Component(repo, "History Repository", "SQLAlchemy", "ORM для работы с БД")
+    Component(auth_repo, "Auth Repository", "SQLAlchemy", "ORM для работы с БД")
 
+    Rel(sign_in, auth_srv, "Uses")
+    Rel(auth_srv, auth_repo, "Uses")
+    Rel(auth_repo, db, "Uses")
+
+    Rel(mobile_app, sign_in, "Uses")
+    Rel(mobile_app, voice_ctrl, "Uses")
+    Rel(mobile_app, food_ctrl, "Uses")
     Rel(voice_ctrl, speech_srv, "Uses")
     Rel(speech_srv, stt, "API Call")
     Rel(speech_srv, nlp, "Возвращает текст")
@@ -149,13 +159,15 @@ Rel(repo, db, "SQL Queries")
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
 Container(backend, "API Application", "Server", "Backend Logic")
-
+Person(user, "Пользователь", "Человек, следящий за питанием")
 Container_Boundary(mobile, "Mobile App") {
     Component(ui, "UI Screens", "Widgets", "Отображение данных")
     Component(state, "State Management", "BLoC/Provider", "Управление состоянием")
     Component(recorder, "Audio Recorder", "Native Bridge", "Запись звука с микрофона")
     Component(api_client, "API Client", "HTTP Library", "Отправка запросов на сервер")
     Component(storage, "Secure Storage", "KeyChain/Keystore", "Хранение токенов")
+
+    Rel(user, ui, "Взаимодействует с")
 
     Rel(ui, state, "События (Events)")
     Rel(state, ui, "Состояния (States)")
