@@ -98,7 +98,7 @@ Rel(api_app, food_api, "Search Food Info", "HTTPS/REST")
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-Container(db, "Database", "PostgreSQL", "Data Storage")
+ContainerDb(db, "Database", "PostgreSQL", "Хранение пользователей, логов питания")
 System_Ext(stt, "Speech-to-Text Service", "Распознавание речи")
 System_Ext(food, "Nutrition Data Provider", "База продуктов")
 Container(mobile_app, "Mobile App", "Flutter/Dart", "Интерфейс для ввода данных и просмотра отчетов")
