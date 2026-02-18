@@ -1,0 +1,310 @@
+{
+  "info": {
+    "name": "Lab4 REST API",
+    "_postman_id": "f8f14617-16e8-4adf-8f8e-51ac9f90588d",
+    "description": "Коллекция для тестирования REST API ЛР4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET /health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Body contains status ok', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.status).to.eql('ok');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /api/v1/products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/products?q=apple",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "products"],
+          "query": [{ "key": "q", "value": "apple" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Products array is returned', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(Array.isArray(body.products)).to.be.true;",
+              "  pm.expect(body.products.length).to.be.greaterThan(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /api/v1/meals",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"meal_type\": \"lunch\",\n  \"meal_date\": \"{{mealDate}}\",\n  \"original_text\": \"200g chicken and 150g rice\",\n  \"items\": [\n    {\n      \"product_name\": \"chicken breast\",\n      \"weight_grams\": 200,\n      \"calories_per_100g\": 165\n    },\n    {\n      \"product_name\": \"rice\",\n      \"weight_grams\": 150,\n      \"calories_per_100g\": 130\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/meals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "meals"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('Meal created and ID saved', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.exist;",
+              "  pm.expect(body.total_calories).to.be.greaterThan(0);",
+              "  pm.collectionVariables.set('mealId', body.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /api/v1/meals",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/meals?user_id={{userId}}&meal_date={{mealDate}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "meals"],
+          "query": [
+            { "key": "user_id", "value": "{{userId}}" },
+            { "key": "meal_date", "value": "{{mealDate}}" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Returned value is array', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(Array.isArray(body)).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /api/v1/meals/{meal_id}",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/meals/{{mealId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "meals", "{{mealId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Meal id matches variable', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.eql(pm.collectionVariables.get('mealId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /api/v1/reports/day-summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/reports/day-summary?user_id={{userId}}&meal_date={{mealDate}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "reports", "day-summary"],
+          "query": [
+            { "key": "user_id", "value": "{{userId}}" },
+            { "key": "meal_date", "value": "{{mealDate}}" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Summary has totals', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.total_calories).to.be.at.least(0);",
+              "  pm.expect(body.meals_count).to.be.at.least(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /api/v1/voice/process",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"text\": \"I ate chicken and apple\",\n  \"meal_type\": \"dinner\",\n  \"meal_date\": \"{{mealDate}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/voice/process",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "voice", "process"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('Voice response has items', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.items.length).to.be.greaterThan(0);",
+              "  pm.expect(body.total_calories).to.be.greaterThan(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT /api/v1/meals/{meal_id}",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"meal_type\": \"dinner\",\n  \"original_text\": \"updated meal\",\n  \"items\": [\n    {\n      \"product_name\": \"banana\",\n      \"weight_grams\": 120,\n      \"calories_per_100g\": 89\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/meals/{{mealId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "meals", "{{mealId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Meal was updated', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.meal_type).to.eql('dinner');",
+              "  pm.expect(body.original_text).to.eql('updated meal');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE /api/v1/meals/{meal_id}",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/meals/{{mealId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "meals", "{{mealId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 204', function () { pm.response.to.have.status(204); });",
+              "pm.test('Body is empty', function () { pm.expect(pm.response.text()).to.eql(''); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /api/v1/meals/{meal_id} (404 after delete)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/meals/{{mealId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "meals", "{{mealId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('Error body contains detail', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.detail).to.eql('Meal not found');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000" },
+    { "key": "userId", "value": "77f496bb-9f04-48be-a03d-cb3ccf6c10a5" },
+    { "key": "mealDate", "value": "2026-02-18" },
+    { "key": "mealId", "value": "" }
+  ]
+}
