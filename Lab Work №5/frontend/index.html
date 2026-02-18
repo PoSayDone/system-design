@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Calorie Voice Diary - Lab 5</title>
+		<style>
+			:root {
+				--bg: #f4f8f6;
+				--card: #ffffff;
+				--accent: #1f7a5b;
+				--text: #123;
+				--muted: #6b7280;
+			}
+			body {
+				margin: 0;
+				font-family: "Roboto", Tahoma, sans-serif;
+				background: linear-gradient(120deg, #eef7f2 0%, #f7fbff 100%);
+				color: var(--text);
+			}
+			.wrap {
+				max-width: 900px;
+				margin: 0 auto;
+				padding: 24px;
+			}
+			.card {
+				background: var(--card);
+				border-radius: 14px;
+				box-shadow: 0 10px 28px rgba(13, 33, 50, 0.08);
+				padding: 20px;
+				margin-bottom: 16px;
+			}
+			h1 {
+				margin: 0 0 14px;
+				font-size: 28px;
+			}
+			h2 {
+				margin: 0 0 10px;
+				font-size: 18px;
+			}
+			.row {
+				display: flex;
+				gap: 10px;
+				flex-wrap: wrap;
+			}
+			input,
+			button {
+				border-radius: 10px;
+				border: 1px solid #d1d5db;
+				padding: 10px 12px;
+				font-size: 14px;
+			}
+			input {
+				flex: 1 1 220px;
+			}
+			button {
+				background: var(--accent);
+				color: white;
+				border: 0;
+				cursor: pointer;
+			}
+			pre {
+				margin: 10px 0 0;
+				background: #0d1b2a;
+				color: #e5f2ff;
+				border-radius: 10px;
+				padding: 10px;
+				overflow: auto;
+				min-height: 64px;
+			}
+			.muted {
+				color: var(--muted);
+				font-size: 14px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wrap">
+			<div class="card">
+				<h1>Calorie Voice Diary</h1>
+				<div class="muted">
+					Лабораторная работа №5: frontend + backend + PostgreSQL в
+					Docker
+				</div>
+			</div>
+
+			<div class="card">
+				<h2>Проверка API</h2>
+				<div class="row">
+					<button id="healthBtn">GET /health</button>
+					<button id="productsBtn">
+						GET /api/v1/products?q=apple
+					</button>
+				</div>
+				<pre id="healthOut"></pre>
+				<pre id="productsOut"></pre>
+			</div>
+
+			<div class="card">
+				<h2>Дневная сводка</h2>
+				<div class="row">
+					<input
+						id="userId"
+						value="77f496bb-9f04-48be-a03d-cb3ccf6c10a5"
+					/>
+					<input id="mealDate" value="2026-02-18" />
+					<button id="summaryBtn">
+						GET /api/v1/reports/day-summary
+					</button>
+				</div>
+				<pre id="summaryOut"></pre>
+			</div>
+		</div>
+
+		<script>
+			const out = (id, payload) => {
+				document.getElementById(id).textContent = JSON.stringify(
+					payload,
+					null,
+					2,
+				);
+			};
+
+			async function getJson(url) {
+				const response = await fetch(url, {
+					headers: { Accept: "application/json" },
+				});
+				const text = await response.text();
+				let body;
+				try {
+					body = JSON.parse(text);
+				} catch (_) {
+					body = text;
+				}
+				return {
+					status: response.status,
+					headers: Object.fromEntries(response.headers.entries()),
+					body,
+				};
+			}
+
+			document
+				.getElementById("healthBtn")
+				.addEventListener("click", async () => {
+					out("healthOut", await getJson("/health"));
+				});
+
+			document
+				.getElementById("productsBtn")
+				.addEventListener("click", async () => {
+					out(
+						"productsOut",
+						await getJson("/api/v1/products?q=apple"),
+					);
+				});
+
+			document
+				.getElementById("summaryBtn")
+				.addEventListener("click", async () => {
+					const userId = document
+						.getElementById("userId")
+						.value.trim();
+					const mealDate = document
+						.getElementById("mealDate")
+						.value.trim();
+					const url = `/api/v1/reports/day-summary?user_id=${encodeURIComponent(userId)}&meal_date=${encodeURIComponent(mealDate)}`;
+					out("summaryOut", await getJson(url));
+				});
+		</script>
+	</body>
+</html>
