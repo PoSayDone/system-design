@@ -3,14 +3,8 @@ name: Lab5 CI/CD
 on:
     push:
         branches: ["main", "master", "feat/lab-5"]
-        paths:
-            - "Lab Work №5/**"
-            - ".github/workflows/lab5-ci.yml"
     pull_request:
-        branches: ["main", "master", "feat/lab-5"]
-        paths:
-            - "Lab Work №5/**"
-            - ".github/workflows/lab5-ci.yml"
+        branches: ["main", "master"]
     workflow_dispatch:
 
 jobs:
