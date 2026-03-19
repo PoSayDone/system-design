@@ -1,0 +1,6 @@
+.venv
+.venv313
+backend/app/lab6.sqlite3
+backend/app/test_lab6.sqlite3
+__pycache__/
+.pytest_cache/
