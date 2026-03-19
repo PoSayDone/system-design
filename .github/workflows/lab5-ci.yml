@@ -71,6 +71,9 @@ jobs:
         runs-on: ubuntu-latest
         needs: build-and-test
         if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+        env:
+            DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+            DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
         steps:
             - name: Checkout
@@ -80,28 +83,28 @@ jobs:
               uses: docker/setup-buildx-action@v3
 
             - name: Login to Docker Hub
-              if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+              if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
               uses: docker/login-action@v3
               with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  username: ${{ env.DOCKERHUB_USERNAME }}
+                  password: ${{ env.DOCKERHUB_TOKEN }}
 
             - name: Build and push backend image
-              if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+              if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
               uses: docker/build-push-action@v6
               with:
                   context: "Lab Work №5/backend"
                   push: true
                   tags: |
-                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-backend:latest
-                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-backend:${{ github.sha }}
+                      ${{ env.DOCKERHUB_USERNAME }}/lab5-backend:latest
+                      ${{ env.DOCKERHUB_USERNAME }}/lab5-backend:${{ github.sha }}
 
             - name: Build and push frontend image
-              if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+              if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
               uses: docker/build-push-action@v6
               with:
                   context: "Lab Work №5/frontend"
                   push: true
                   tags: |
-                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-frontend:latest
-                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-frontend:${{ github.sha }}
+                      ${{ env.DOCKERHUB_USERNAME }}/lab5-frontend:latest
+                      ${{ env.DOCKERHUB_USERNAME }}/lab5-frontend:${{ github.sha }}
