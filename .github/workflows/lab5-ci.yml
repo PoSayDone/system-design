@@ -2,10 +2,15 @@ name: Lab5 CI/CD
 
 on:
     push:
-        branches: ["main", "master", "feat/lab-5"]
+        branches:
+            - main
+            - master
+            - feat/lab-5
     pull_request:
-        branches: ["main", "master"]
-    workflow_dispatch:
+        branches:
+            - main
+            - master
+    workflow_dispatch: {}
 
 jobs:
     build-and-test:
@@ -73,7 +78,7 @@ jobs:
     publish-images:
         runs-on: ubuntu-latest
         needs: build-and-test
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
 
         steps:
             - name: Checkout
