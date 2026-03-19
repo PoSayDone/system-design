@@ -2,15 +2,7 @@ name: Lab5 CI/CD
 
 on:
     push:
-        branches:
-            - main
-            - master
-            - feat/lab-5
-    pull_request:
-        branches:
-            - main
-            - master
-    workflow_dispatch: {}
+        branches: [main]
 
 jobs:
     build-and-test:
