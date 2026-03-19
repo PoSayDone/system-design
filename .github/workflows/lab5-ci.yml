@@ -1,116 +1,116 @@
 name: Lab5 CI/CD
 
 on:
-  push:
-    branches: [ "main", "master", "feat/lab-5" ]
-    paths:
-      - "Lab Work №5/**"
-      - ".github/workflows/lab5-ci.yml"
-  pull_request:
-    branches: [ "main", "master", "feat/lab-5 ]
-    paths:
-      - "Lab Work №5/**"
-      - ".github/workflows/lab5-ci.yml"
-  workflow_dispatch:
+    push:
+        branches: ["main", "master", "feat/lab-5"]
+        paths:
+            - "Lab Work №5/**"
+            - ".github/workflows/lab5-ci.yml"
+    pull_request:
+        branches: ["main", "master", "feat/lab-5"]
+        paths:
+            - "Lab Work №5/**"
+            - ".github/workflows/lab5-ci.yml"
+    workflow_dispatch:
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    build-and-test:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
-      - name: Build backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: "Lab Work №5/backend"
-          push: false
-          tags: local/lab5-backend:ci
+            - name: Build backend image
+              uses: docker/build-push-action@v6
+              with:
+                  context: "Lab Work №5/backend"
+                  push: false
+                  tags: local/lab5-backend:ci
 
-      - name: Build frontend image
-        uses: docker/build-push-action@v6
-        with:
-          context: "Lab Work №5/frontend"
-          push: false
-          tags: local/lab5-frontend:ci
+            - name: Build frontend image
+              uses: docker/build-push-action@v6
+              with:
+                  context: "Lab Work №5/frontend"
+                  push: false
+                  tags: local/lab5-frontend:ci
 
-      - name: Start services with Docker Compose
-        run: docker compose -f "Lab Work №5/docker-compose.yml" up -d --build
+            - name: Start services with Docker Compose
+              run: docker compose -f "Lab Work №5/docker-compose.yml" up -d --build
 
-      - name: Wait for backend health
-        run: |
-          for i in {1..40}; do
-            if curl -fsS http://localhost:8000/health > /dev/null; then
-              echo "Backend is healthy"
-              exit 0
-            fi
-            sleep 3
-          done
-          echo "Backend did not become healthy in time"
-          docker compose -f "Lab Work №5/docker-compose.yml" logs
-          exit 1
+            - name: Wait for backend health
+              run: |
+                  for i in {1..40}; do
+                    if curl -fsS http://localhost:8000/health > /dev/null; then
+                      echo "Backend is healthy"
+                      exit 0
+                    fi
+                    sleep 3
+                  done
+                  echo "Backend did not become healthy in time"
+                  docker compose -f "Lab Work №5/docker-compose.yml" logs
+                  exit 1
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
 
-      - name: Install integration test dependencies
-        run: pip install -r "Lab Work №5/integration-tests/requirements.txt"
+            - name: Install integration test dependencies
+              run: pip install -r "Lab Work №5/integration-tests/requirements.txt"
 
-      - name: Run integration tests
-        env:
-          API_BASE_URL: http://localhost:8000
-        run: pytest -q "Lab Work №5/integration-tests/test_integration_api.py"
+            - name: Run integration tests
+              env:
+                  API_BASE_URL: http://localhost:8000
+              run: pytest -q "Lab Work №5/integration-tests/test_integration_api.py"
 
-      - name: Show compose logs on failure
-        if: failure()
-        run: docker compose -f "Lab Work №5/docker-compose.yml" logs
+            - name: Show compose logs on failure
+              if: failure()
+              run: docker compose -f "Lab Work №5/docker-compose.yml" logs
 
-      - name: Stop services
-        if: always()
-        run: docker compose -f "Lab Work №5/docker-compose.yml" down -v
+            - name: Stop services
+              if: always()
+              run: docker compose -f "Lab Work №5/docker-compose.yml" down -v
 
-  publish-images:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    publish-images:
+        runs-on: ubuntu-latest
+        needs: build-and-test
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: Login to Docker Hub
+              if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push backend image
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
-        uses: docker/build-push-action@v6
-        with:
-          context: "Lab Work №5/backend"
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/lab5-backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/lab5-backend:${{ github.sha }}
+            - name: Build and push backend image
+              if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+              uses: docker/build-push-action@v6
+              with:
+                  context: "Lab Work №5/backend"
+                  push: true
+                  tags: |
+                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-backend:latest
+                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-backend:${{ github.sha }}
 
-      - name: Build and push frontend image
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
-        uses: docker/build-push-action@v6
-        with:
-          context: "Lab Work №5/frontend"
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/lab5-frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/lab5-frontend:${{ github.sha }}
+            - name: Build and push frontend image
+              if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+              uses: docker/build-push-action@v6
+              with:
+                  context: "Lab Work №5/frontend"
+                  push: true
+                  tags: |
+                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-frontend:latest
+                      ${{ secrets.DOCKERHUB_USERNAME }}/lab5-frontend:${{ github.sha }}
