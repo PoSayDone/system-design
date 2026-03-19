@@ -1,0 +1,53 @@
+services:
+    db:
+        image: postgres:16-alpine
+        container_name: lab5-db
+        environment:
+            POSTGRES_DB: calorie_diary
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - "5432:5432"
+        volumes:
+            - pg_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d calorie_diary"]
+            interval: 5s
+            timeout: 5s
+            retries: 12
+
+    backend:
+        build:
+            context: ./backend
+        container_name: lab5-backend
+        environment:
+            DATABASE_URL: postgresql://postgres:postgres@db:5432/calorie_diary
+        depends_on:
+            db:
+                condition: service_healthy
+        ports:
+            - "8000:8000"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()",
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 12
+
+    frontend:
+        build:
+            context: ./frontend
+        container_name: lab5-frontend
+        depends_on:
+            backend:
+                condition: service_healthy
+        ports:
+            - "8080:80"
+
+volumes:
+    pg_data:
